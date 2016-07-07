@@ -1,5 +1,15 @@
 <App>
+	<Circle ux:Class="ControlPointGizmo" Width="20" Height="20" Color="1, 1, 1, 0.5" Opacity="0.75">
+		<Draggable />
+		<WhileHovering>
+			 <Change this.Opacity="1" Duration="0.1"/>
+		</WhileHovering>
+		<Stroke Width="1" Color="Black" />
+		<Stroke Width="1" Offset="-8" Color="Black" />
+	</Circle>
+
 	<Hack Width="100%" Height="100%" Color="Red">
+		<ControlPointGizmo ux:Template="ControlPoint" />
 		<Stroke Width="5" Color="Green" />
 	</Hack>
 </App>

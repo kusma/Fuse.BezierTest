@@ -11,24 +11,36 @@ class Hack : Shape
 	{
 		base.OnRooted();
 		UpdateManager.AddAction(OnUpdate);
+
+		var controlPointTemplate = FindTemplate("ControlPoint");
+		if (controlPointTemplate != null)
+		{
+			_c0 = controlPointTemplate.New() as Visual;
+			_c1 = controlPointTemplate.New() as Visual;
+			_c2 = controlPointTemplate.New() as Visual;
+			Children.Add(_c0);
+			Children.Add(_c1);
+			Children.Add(_c2);
+		}
 	}
 
 	protected override void OnUnrooted()
 	{
 		base.OnUnrooted();
 		UpdateManager.RemoveAction(OnUpdate);
+
+		_c0 = null;
+		_c1 = null;
+		_c2 = null;
 	}
 
-	float2 P0, P1, P2;
+	Visual _c0, _c1, _c2;
+	float2 P0 { get { return _c0 != null ? Vector.Transform(_c0.LocalBounds.Center, _c0.WorldTransform).XY : float2(0, 0); } }
+	float2 P1 { get { return _c1 != null ? Vector.Transform(_c1.LocalBounds.Center, _c1.WorldTransform).XY : float2(0.5f, 1); } }
+	float2 P2 { get { return _c2 != null ? Vector.Transform(_c2.LocalBounds.Center, _c2.WorldTransform).XY : float2(1, 0); } }
 
 	void OnUpdate()
 	{
-		double time = Uno.Diagnostics.Clock.GetSeconds();
-
-		P0 = float2(300 + (float)Math.Sin(time * 2) * 50, 300 + (float)Math.Cos(time * 2) * 150);
-		P1 = float2(600 + (float)Math.Sin(time) * 50,     600 + (float)Math.Cos(time) * 150);
-		P2 = float2(900, 300);
-
 		InvalidateVisual();
 	}
 
