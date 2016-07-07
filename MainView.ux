@@ -1,5 +1,5 @@
 <App>
 	<Hack Width="100%" Height="100%" Color="Red">
-		<Stroke Width="1" Color="Blue" />
+		<Stroke Width="5" Color="Green" />
 	</Hack>
 </App>
