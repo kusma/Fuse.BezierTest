@@ -146,8 +146,13 @@ class Hack : Shape
 
 			ClipPosition: Vector.Transform(LocalVertex, localToClipTransform);
 
-			float Distance: pixel TexCoord.X * TexCoord.X - TexCoord.Y;
-			float Coverage: Distance < 0 ? 1 : 0;
+			float2 px: Math.Ddx(pixel TexCoord);
+			float2 py: Math.Ddy(pixel TexCoord);
+			float fx: (2 * TexCoord.X) * px.X - px.Y;
+			float fy: (2 * TexCoord.Y) * py.X - py.Y;
+
+			float Distance: (pixel TexCoord.X * TexCoord.X - TexCoord.Y) / Math.Sqrt(fx * fx + fy * fy);
+			float Coverage: Math.Clamp(0.5f - Distance, 0, 1);
 			PixelColor: float4(1, 0, 0, Coverage);
 		};
 	}
