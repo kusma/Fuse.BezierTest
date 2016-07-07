@@ -92,7 +92,8 @@ class Hack : Shape
 		float2 normalizedP2 = float2(1, 0);
 
 		float thickness = 2.0f;
-		float normalizedThickness = thickness / Vector.Distance(P0, P2);
+		float scale = Vector.Distance(P0, P2);
+		float normalizedThickness = thickness / scale;
 
 		// TODO: generate better hull-geometry!
 		var t0 = Vector.Normalize(P1 - P0);
@@ -123,8 +124,8 @@ class Hack : Shape
 
 			ClipPosition: Vector.Transform(LocalVertex, localToClipTransform);
 
-			float Distance: DistanceNormalizedBezier(normalizedP1, pixel TexCoord);
-			float Coverage: Distance < normalizedThickness ? 1 : 0;
+			float Distance: DistanceNormalizedBezier(normalizedP1, pixel TexCoord) * scale;
+			float Coverage: Math.Clamp(thickness - Distance, 0, 1);
 			PixelColor: float4(0, 0.8f, 0, 1) * Coverage;
 		};
 	}
