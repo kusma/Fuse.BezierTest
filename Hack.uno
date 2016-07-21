@@ -74,7 +74,7 @@ class Hack : Shape
 		var v = Math.Acos(-Math.Sqrt(-27 / p3) * q / 2) / 3;
 		var m = Math.Cos(v),
 		n = Math.Sin(v) * Math.Sqrt(3);
-		return float3(m + m, -n - m, n - m) * Math.Sqrt(-p / 3) + offset;
+		return offset + float3(m + m, -n - m, n - m) * Math.Sqrt(-p / 3);
 	}
 
 	static float DistanceNormalizedBezier(float2 p1, float2 p)
@@ -107,9 +107,9 @@ class Hack : Shape
 	{
 		var localToClipTransform = dc.GetLocalToClipTransform(this);
 
-		float2 normalizedP0 = float2(0, 0);
-		float2 normalizedP1 = NormalizeQuadraticBezier(P0, P1, P2);
-		float2 normalizedP2 = float2(1, 0);
+		float2 np0 = float2(0, 0);
+		float2 np1 = NormalizeQuadraticBezier(P0, P1, P2);
+		float2 np2 = float2(1, 0);
 
 		float scale = Vector.Distance(P0, P2);
 		float normalizedThickness = stroke.Width / scale;
@@ -124,12 +124,12 @@ class Hack : Shape
 			P2 - float2(-t1.Y, t1.X) * stroke.Width,
 		};
 
-		var nt0 = Vector.Normalize(normalizedP1 - normalizedP0);
-		var nt1 = Vector.Normalize(normalizedP1 - normalizedP2);
+		var nt0 = Vector.Normalize(np1 - np0);
+		var nt1 = Vector.Normalize(np1 - np2);
 		var texCoords = new float2[] {
-			normalizedP0 + float2(-nt0.Y, nt0.X) * normalizedThickness,
-			normalizedP1,
-			normalizedP2 - float2(-nt1.Y, nt1.X) * normalizedThickness
+			np0 + float2(-nt0.Y, nt0.X) * normalizedThickness,
+			np1,
+			np2 - float2(-nt1.Y, nt1.X) * normalizedThickness
 		};
 
 		positions[1] = IntersectTangents(positions[0], t0,
@@ -148,7 +148,7 @@ class Hack : Shape
 
 			ClipPosition: Vector.Transform(LocalVertex, localToClipTransform);
 
-			float Distance: DistanceNormalizedBezier(normalizedP1, pixel TexCoord) * scale;
+			float Distance: DistanceNormalizedBezier(np1, pixel TexCoord) * scale;
 			float Coverage: Math.Clamp(stroke.Width - Distance, 0, 1);
 			PixelColor: stroke.Color * Coverage;
 		};
