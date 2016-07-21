@@ -95,6 +95,14 @@ class Hack : Shape
 		return Math.Sqrt(Math.Min(d, Vector.Dot(v, v)));
 	}
 
+	float2 IntersectTangents(float2 p0, float2 t0, float2 p1, float2 t1)
+	{
+		float c1 = p0.X * t0.Y - p0.Y * t0.X;
+		float c2 = p1.X * t1.Y - p1.Y * t1.X;
+		float delta = t0.X * t1.Y - t0.Y * t1.X;
+		return (t0 * c2 - t1 * c1) / delta;
+	}
+
 	protected override void DrawStroke(DrawContext dc, Stroke stroke)
 	{
 		var localToClipTransform = dc.GetLocalToClipTransform(this);
@@ -123,6 +131,11 @@ class Hack : Shape
 			normalizedP1,
 			normalizedP2 - float2(-nt1.Y, nt1.X) * normalizedThickness
 		};
+
+		positions[1] = IntersectTangents(positions[0], t0,
+		                                 positions[2], t1);
+		texCoords[1] = IntersectTangents(texCoords[0], nt0,
+		                                 texCoords[2], nt1);
 
 		draw
 		{
