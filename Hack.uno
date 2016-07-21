@@ -117,25 +117,15 @@ class Hack : Shape
 		// TODO: generate better hull-geometry!
 		var t0 = Vector.Normalize(P1 - P0);
 		var t1 = Vector.Normalize(P1 - P2);
-
-		var positions = new float2[] {
-			P0 + float2(-t0.Y, t0.X) * stroke.Width,
-			P1,
-			P2 - float2(-t1.Y, t1.X) * stroke.Width,
-		};
+		var p0 = P0 + float2(-t0.Y, t0.X) * stroke.Width;
+		var p2 = P2 - float2(-t1.Y, t1.X) * stroke.Width;
+		var positions = new float2[] { p0, IntersectTangents(p0, t0, p2, t1), p2 };
 
 		var nt0 = Vector.Normalize(np1 - np0);
 		var nt1 = Vector.Normalize(np1 - np2);
-		var texCoords = new float2[] {
-			np0 + float2(-nt0.Y, nt0.X) * normalizedThickness,
-			np1,
-			np2 - float2(-nt1.Y, nt1.X) * normalizedThickness
-		};
-
-		positions[1] = IntersectTangents(positions[0], t0,
-		                                 positions[2], t1);
-		texCoords[1] = IntersectTangents(texCoords[0], nt0,
-		                                 texCoords[2], nt1);
+		np0 += float2(-nt0.Y, nt0.X) * normalizedThickness;
+		np2 -= float2(-nt1.Y, nt1.X) * normalizedThickness;
+		var texCoords = new float2[] { np0, IntersectTangents(np0, nt0, np2, nt1), np2 };
 
 		draw
 		{
