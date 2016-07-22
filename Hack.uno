@@ -183,7 +183,7 @@ class Hack : Shape
 
 			float Distance: (pixel TexCoord.X * TexCoord.X - TexCoord.Y) / Math.Sqrt(fx * fx + fy * fy);
 			float Coverage: Math.Clamp(0.5f - Distance, 0, 1);
-			PixelColor: float4(1, 0, 0, Coverage);
+			PixelColor: float4(1, 0, 0, 1) * Coverage;
 		};
 	}
 }
