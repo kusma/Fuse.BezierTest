@@ -44,7 +44,7 @@ class Hack : Shape
 		InvalidateVisual();
 	}
 
-	float2 NormalizeQuadraticBezier(float2 p0, float2 p1, float2 p2)
+	static float2 NormalizeQuadraticBezier(float2 p0, float2 p1, float2 p2)
 	{
 		var u = p2 - p0;
 		u = u / Vector.Dot(u, u);
@@ -95,7 +95,7 @@ class Hack : Shape
 		return Math.Sqrt(Math.Min(d, Vector.Dot(v, v)));
 	}
 
-	float2 IntersectTangents(float2 p0, float2 t0, float2 p1, float2 t1)
+	static float2 IntersectTangents(float2 p0, float2 t0, float2 p1, float2 t1)
 	{
 		float c1 = p0.X * t0.Y - p0.Y * t0.X;
 		float c2 = p1.X * t1.Y - p1.Y * t1.X;
