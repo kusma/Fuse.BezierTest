@@ -10,6 +10,6 @@
 
 	<Hack Width="100%" Height="100%" Color="Red">
 		<ControlPointGizmo ux:Template="ControlPoint" />
-		<Stroke Width="5" Color="Green" />
+		<Stroke Width="50" Color="Green" />
 	</Hack>
 </App>

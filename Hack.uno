@@ -119,22 +119,38 @@ class Hack : Shape
 		var t1 = Vector.Normalize(P1 - P2);
 		var p0 = P0 + float2(-t0.Y, t0.X) * stroke.Width;
 		var p2 = P2 - float2(-t1.Y, t1.X) * stroke.Width;
-		var positions = new float2[] { p0, IntersectTangents(p0, t0, p2, t1), p2 };
+		var positions = new float2[]
+		{
+			p0,
+			IntersectTangents(p0, t0, p2, t1),
+			p2,
+			P0 - float2(-t0.Y, t0.X) * stroke.Width,
+			P2 + float2(-t1.Y, t1.X) * stroke.Width,
+		};
 
 		var nt0 = Vector.Normalize(np1 - np0);
 		var nt1 = Vector.Normalize(np1 - np2);
-		np0 += float2(-nt0.Y, nt0.X) * normalizedThickness;
-		np2 -= float2(-nt1.Y, nt1.X) * normalizedThickness;
-		var texCoords = new float2[] { np0, IntersectTangents(np0, nt0, np2, nt1), np2 };
+		var nv0 = np0 + float2(-nt0.Y, nt0.X) * normalizedThickness;
+		var nv2 = np2 - float2(-nt1.Y, nt1.X) * normalizedThickness;
+
+		var texCoords = new float2[]
+		{
+			nv0,
+			IntersectTangents(nv0, nt0, nv2, nt1),
+			nv2,
+			np0 - float2(-nt0.Y, nt0.X) * normalizedThickness,
+			np2 + float2(-nt1.Y, nt1.X) * normalizedThickness,
+		};
 
 		draw
 		{
 			apply Fuse.Drawing.Planar.PreMultipliedAlphaCompositing;
 			CullFace : PolygonFace.None;
 
-			float2 LocalVertex: vertex_attrib(positions);
-			float2 TexCoord: vertex_attrib(texCoords);
-			VertexCount: 3;
+			float2 LocalVertex: vertex_attrib(positions, Indices);
+			float2 TexCoord: vertex_attrib(texCoords, Indices);
+			ushort[] Indices : new ushort[] { 0,1,3, 1,4,3, 1,2,4 };
+			VertexCount : 9;
 
 			ClipPosition: Vector.Transform(LocalVertex, localToClipTransform);
 
