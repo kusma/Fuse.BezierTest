@@ -119,39 +119,41 @@ class Hack : Shape
 	{
 		var localToClipTransform = dc.GetLocalToClipTransform(this);
 
-		float2 np0 = float2(0, 0);
-		float2 np1 = NormalizeQuadraticBezier(b);
-		float2 np2 = float2(1, 0);
+		var np0 = float2(0, 0);
+		var np1 = NormalizeQuadraticBezier(b);
+		var np2 = float2(1, 0);
 
-		float scale = Vector.Distance(b.P0, b.P2);
-		float normalizedThickness = stroke.Width / scale;
+		var scale = Vector.Distance(b.P0, b.P2);
+		var scaleInverse = 1.0f / scale;
+		float normalizedThickness = stroke.Width * scaleInverse;
 
-		// TODO: generate better hull-geometry!
+		var direction = Math.Sign(np1.Y);
+
 		var t0 = Vector.Normalize(b.P1 - b.P0);
 		var t1 = Vector.Normalize(b.P1 - b.P2);
-		var p0 = b.P0 + float2(-t0.Y, t0.X) * stroke.Width;
-		var p2 = b.P2 - float2(-t1.Y, t1.X) * stroke.Width;
+		var v0 = b.P0 + float2(-t0.Y, t0.X) * direction * stroke.Width;
+		var v2 = b.P2 - float2(-t1.Y, t1.X) * direction * stroke.Width;
 		var positions = new float2[]
 		{
-			p0,
-			IntersectTangents(p0, t0, p2, t1),
-			p2,
-			b.P0 - float2(-t0.Y, t0.X) * stroke.Width,
-			b.P2 + float2(-t1.Y, t1.X) * stroke.Width,
+			v0,
+			IntersectTangents(v0, t0, v2, t1),
+			v2,
+			b.P0 - float2(-t0.Y, t0.X) * direction * stroke.Width,
+			b.P2 + float2(-t1.Y, t1.X) * direction * stroke.Width,
 		};
 
 		var nt0 = Vector.Normalize(np1 - np0);
 		var nt1 = Vector.Normalize(np1 - np2);
-		var nv0 = np0 + float2(-nt0.Y, nt0.X) * normalizedThickness;
-		var nv2 = np2 - float2(-nt1.Y, nt1.X) * normalizedThickness;
+		var nv0 = np0 + float2(-nt0.Y, nt0.X) * direction * normalizedThickness;
+		var nv2 = np2 - float2(-nt1.Y, nt1.X) * direction * normalizedThickness;
 
 		var texCoords = new float2[]
 		{
 			nv0,
 			IntersectTangents(nv0, nt0, nv2, nt1),
 			nv2,
-			np0 - float2(-nt0.Y, nt0.X) * normalizedThickness,
-			np2 + float2(-nt1.Y, nt1.X) * normalizedThickness,
+			np0 - float2(-nt0.Y, nt0.X) * direction * normalizedThickness,
+			np2 + float2(-nt1.Y, nt1.X) * direction * normalizedThickness,
 		};
 
 		draw
