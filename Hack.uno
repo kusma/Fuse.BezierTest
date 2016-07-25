@@ -5,6 +5,18 @@ using Uno;
 using Uno.Collections;
 using Uno.Graphics;
 
+struct QuadraticBezier
+{
+	public QuadraticBezier(float2 p0, float2 p1, float2 p2)
+	{
+		P0 = p0;
+		P1 = p1;
+		P2 = p2;
+	}
+
+	public readonly float2 P0, P1, P2;
+}
+
 class Hack : Shape
 {
 	protected override void OnRooted()
@@ -44,15 +56,15 @@ class Hack : Shape
 		InvalidateVisual();
 	}
 
-	static float2 NormalizeQuadraticBezier(float2 p0, float2 p1, float2 p2)
+	static float2 NormalizeQuadraticBezier(QuadraticBezier b)
 	{
-		var u = p2 - p0;
+		var u = b.P2 - b.P0;
 		u = u / Vector.Dot(u, u);
 
 		var v = float2(-u.Y, u.X);
-
-		return float2(Vector.Dot(p1 - p0, u),
-		              Vector.Dot(p1 - p0, v));
+		var w = b.P1 - b.P0;
+		return float2(Vector.Dot(w, u),
+		              Vector.Dot(w, v));
 	}
 
 	static float3 SolveCubic(float a, float b, float c)
@@ -103,29 +115,29 @@ class Hack : Shape
 		return (t0 * c2 - t1 * c1) / delta;
 	}
 
-	protected override void DrawStroke(DrawContext dc, Stroke stroke)
+	void StrokeQuadratic(DrawContext dc, Stroke stroke, QuadraticBezier b)
 	{
 		var localToClipTransform = dc.GetLocalToClipTransform(this);
 
 		float2 np0 = float2(0, 0);
-		float2 np1 = NormalizeQuadraticBezier(P0, P1, P2);
+		float2 np1 = NormalizeQuadraticBezier(b);
 		float2 np2 = float2(1, 0);
 
-		float scale = Vector.Distance(P0, P2);
+		float scale = Vector.Distance(b.P0, b.P2);
 		float normalizedThickness = stroke.Width / scale;
 
 		// TODO: generate better hull-geometry!
-		var t0 = Vector.Normalize(P1 - P0);
-		var t1 = Vector.Normalize(P1 - P2);
-		var p0 = P0 + float2(-t0.Y, t0.X) * stroke.Width;
-		var p2 = P2 - float2(-t1.Y, t1.X) * stroke.Width;
+		var t0 = Vector.Normalize(b.P1 - b.P0);
+		var t1 = Vector.Normalize(b.P1 - b.P2);
+		var p0 = b.P0 + float2(-t0.Y, t0.X) * stroke.Width;
+		var p2 = b.P2 - float2(-t1.Y, t1.X) * stroke.Width;
 		var positions = new float2[]
 		{
 			p0,
 			IntersectTangents(p0, t0, p2, t1),
 			p2,
-			P0 - float2(-t0.Y, t0.X) * stroke.Width,
-			P2 + float2(-t1.Y, t1.X) * stroke.Width,
+			b.P0 - float2(-t0.Y, t0.X) * stroke.Width,
+			b.P2 + float2(-t1.Y, t1.X) * stroke.Width,
 		};
 
 		var nt0 = Vector.Normalize(np1 - np0);
@@ -158,6 +170,11 @@ class Hack : Shape
 			float Coverage: Math.Clamp(stroke.Width - Distance, 0, 1);
 			PixelColor: stroke.Color * Coverage;
 		};
+	}
+
+	protected override void DrawStroke(DrawContext dc, Stroke stroke)
+	{
+		StrokeQuadratic(dc, stroke, new QuadraticBezier(P0, P1, P2));
 	}
 
 	protected override void DrawFill(DrawContext dc, Brush fill)
