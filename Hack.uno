@@ -14,6 +14,18 @@ struct QuadraticBezier
 		P2 = p2;
 	}
 
+	public float2 Subdivide(float t, out QuadraticBezier left, out QuadraticBezier right)
+	{
+		var p01   = P0 + (P1 - P0) * t;
+		var p12   = P1 + (P2 - P1) * t;
+		var p012  = p01 + (p12 - p01) * t;
+
+		left = new QuadraticBezier(P0, p01, p012);
+		right = new QuadraticBezier(p012, p12, P2);
+		return p012;
+	}
+
+
 	public readonly float2 P0, P1, P2;
 }
 
