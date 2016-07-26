@@ -63,8 +63,8 @@ class Hack : Shape
 
 		var v = float2(-u.Y, u.X);
 		var w = b.P1 - b.P0;
-		return float2(Vector.Dot(w, u),
-		              Vector.Dot(w, v));
+		return float2(Vector.Dot(w, u) * 2 - 1,
+		              Vector.Dot(w, v) * 2);
 	}
 
 	static float3 SolveCubic(float a, float b, float c)
@@ -91,20 +91,23 @@ class Hack : Shape
 
 	static float DistanceNormalizedBezier(float2 p1, float2 p)
 	{
-		var b = float2(1, 0) - p1 * 2;
-		var k = float3(3 * Vector.Dot(p1, b),
-		               2 * Vector.Dot(p1, p1) + Vector.Dot(-p, b),
-		                   Vector.Dot(-p, p1)) / Vector.Dot(b, b);
-		var t = SolveCubic(k.X, k.Y, k.Z);
-		t = Math.Clamp(t, 0, 1); // not needed if we don't care about the end-points
+		var a = float2(1, 0) + p1,
+		    b = -p1 * 2;
 
-		var c = p1 * 2;
-		var v = (c + b * t.X) * t.X - p;
-		var d = Vector.Dot(v, v);
-		v = (c + b * t.Y) * t.Y - p;
-		d = Math.Min(d, Vector.Dot(v, v));
-		v = (c + b * t.Z) * t.Z - p;
-		return Math.Sqrt(Math.Min(d, Vector.Dot(v, v)));
+		var d = float2(-1, 0) - p;
+		var k = float3(3 * Vector.Dot(a, b),
+		               2 * Vector.Dot(a, a) + Vector.Dot(d, b),
+		                   Vector.Dot(d, a)) / Vector.Dot(b, b);
+		var t = SolveCubic(k.X, k.Y, k.Z);
+		t = Math.Clamp(t, 0, 1);
+
+		var c = a * 2;
+		var v = float2(-1, 0) + (c + b * t.X) * t.X - p;
+		var dist = Vector.Dot(v, v);
+		v = float2(-1, 0) + (c + b * t.Y) * t.Y - p;
+		dist = Math.Min(dist, Vector.Dot(v, v));
+		v = float2(-1, 0) + (c + b * t.Z) * t.Z - p;
+		return Math.Sqrt(Math.Min(dist, Vector.Dot(v, v)));
 	}
 
 	static float2 IntersectTangents(float2 p0, float2 t0, float2 p1, float2 t1)
@@ -119,13 +122,13 @@ class Hack : Shape
 	{
 		var localToClipTransform = dc.GetLocalToClipTransform(this);
 
-		var np0 = float2(0, 0);
+		var np0 = float2(-1, 0);
 		var np1 = NormalizeQuadraticBezier(b);
 		var np2 = float2(1, 0);
 
 		var scale = Vector.Distance(b.P0, b.P2);
 		var scaleInverse = 1.0f / scale;
-		float normalizedThickness = stroke.Width * scaleInverse;
+		float normalizedThickness = stroke.Width * 2 * scaleInverse;
 
 		var direction = Math.Sign(np1.Y);
 
@@ -169,7 +172,7 @@ class Hack : Shape
 			ClipPosition: Vector.Transform(LocalVertex, localToClipTransform);
 
 			float Distance: DistanceNormalizedBezier(np1, pixel TexCoord) * scale;
-			float Coverage: Math.Clamp(stroke.Width - Distance, 0, 1);
+			float Coverage: Math.Clamp(2 * stroke.Width - Distance, 0, 1);
 			PixelColor: stroke.Color * Coverage;
 		};
 	}
