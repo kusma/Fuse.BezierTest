@@ -130,7 +130,7 @@ class Hack : Shape
 		return (t0 * c2 - t1 * c1) / delta;
 	}
 
-	void StrokeQuadratic(DrawContext dc, Stroke stroke, QuadraticBezier b)
+	void StrokeQuadratic(DrawContext dc, Stroke stroke, QuadraticBezier b, int iteration = 0)
 	{
 		var localToClipTransform = dc.GetLocalToClipTransform(this);
 
@@ -141,6 +141,26 @@ class Hack : Shape
 		var scale = Vector.Distance(b.P0, b.P2);
 		var scaleInverse = 1.0f / scale;
 		float normalizedThickness = stroke.Width * 2 * scaleInverse;
+
+		var tmp1 = b.P0 + (b.P2 - b.P0) * 0.25f;
+		var tmp2 = b.P0 + (b.P2 - b.P0) * 0.75f;
+		var rad = Vector.Length(b.P2 - b.P0) * 0.25f;
+		if (iteration < 1 && Math.Min(Vector.Distance(tmp1, b.P1), Vector.Distance(tmp2, b.P1)) > rad)
+		{
+			var v = Vector.Normalize((b.P2 + b.P0) * 0.5f - b.P1);
+			var u = float2(v.Y, -v.X);
+			var AA = float2(Vector.Dot(b.P0, u), Vector.Dot(b.P0, v));
+			var BB = float2(Vector.Dot(b.P1, u), Vector.Dot(b.P1, v));
+			var CC = float2(Vector.Dot(b.P2, u), Vector.Dot(b.P2, v));
+			var t = (AA.Y - BB.Y) / (AA.Y - 2 * BB.Y + CC.Y);
+
+			QuadraticBezier left, right;
+			b.Subdivide(t, out left, out right);
+
+			StrokeQuadratic(dc, stroke, left, iteration + 1);
+			StrokeQuadratic(dc, stroke, right, iteration + 1);
+			return;
+		}
 
 		var direction = Math.Sign(np1.Y);
 
